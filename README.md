@@ -238,11 +238,18 @@ curl -X POST -F "file=@transactions.xlsx" http://localhost:5000/api/transactions
 }
 ```
 
-**Excel Format:**
-- Column A: Description
-- Column B: Amount (decimal number)
-- Column C: Type (income/expense)
-- Column D: Date (optional, format: YYYY-MM-DD)
+**Excel Format (Bank Statement Format):**
+- Column A: Date (optional, uses current date if empty)
+- Column B: Narration (Description) - Required
+- Column C: Chq./Ref.No (Optional - appended to narration)
+- Column D: Withdrawal Amt. (For expenses)
+- Column E: Deposit Amt. (For income)
+
+**Example:**
+| Date | Narration | Chq./Ref.No | Withdrawal Amt. | Deposit Amt. |
+|---|---|---|---|---|
+| 2026-03-01 | Monthly Salary | - | | 5000 |
+| 2026-03-02 | Groceries | CHQ123 | 150.50 | |
 
 For detailed Excel format guide, see [EXCEL_IMPORT_GUIDE.md](EXCEL_IMPORT_GUIDE.md)
 

@@ -126,21 +126,20 @@ public class TransactionsController : ControllerBase
                     {
                         try
                         {
-                            var description = row.Cell(1).GetString()?.Trim();
-                            var amountStr = row.Cell(2).GetString()?.Trim();
-                            var type = row.Cell(3).GetString()?.Trim();
-                            var dateStr = row.Cell(4).GetString()?.Trim();
+                            // Bank statement format:
+                            // Column A: Date
+                            // Column B: Narration (Description)
+                            // Column C: Chq./Ref.No
+                            // Column D: Withdrawal Amt. (Expense)
+                            // Column E: Deposit Amt. (Income)
 
-                            // Validation
-                            if (string.IsNullOrEmpty(description))
-                                continue;
+                            var dateStr = row.Cell(1).GetString()?.Trim();
+                            var narration = row.Cell(2).GetString()?.Trim();
+                            var cheqRefNo = row.Cell(3).GetString()?.Trim();
+                            var withdrawalStr = row.Cell(4).GetString()?.Trim();
+                            var depositStr = row.Cell(5).GetString()?.Trim();
 
-                            if (!decimal.TryParse(amountStr, out var amount) || amount <= 0)
-                                continue;
-
-                            if (string.IsNullOrEmpty(type) || (type.ToLower() != "income" && type.ToLower() != "expense"))
-                                continue;
-
+                            // Parse date
                             var date = DateTime.UtcNow;
                             if (!string.IsNullOrEmpty(dateStr))
                             {
@@ -148,11 +147,42 @@ public class TransactionsController : ControllerBase
                                     date = parsedDate;
                             }
 
+                            // Validation - narration is required
+                            if (string.IsNullOrEmpty(narration))
+                                continue;
+
+                            // Build description with reference number if available
+                            var description = narration;
+                            if (!string.IsNullOrEmpty(cheqRefNo))
+                                description = $"{narration} (Ref: {cheqRefNo})";
+
+                            // Determine amount and type based on withdrawal/deposit columns
+                            decimal amount = 0;
+                            string type = "expense";
+                            bool hasAmount = false;
+
+                            if (!string.IsNullOrEmpty(withdrawalStr) && decimal.TryParse(withdrawalStr, out var withdrawalAmount) && withdrawalAmount > 0)
+                            {
+                                amount = withdrawalAmount;
+                                type = "expense";
+                                hasAmount = true;
+                            }
+                            else if (!string.IsNullOrEmpty(depositStr) && decimal.TryParse(depositStr, out var depositAmount) && depositAmount > 0)
+                            {
+                                amount = depositAmount;
+                                type = "income";
+                                hasAmount = true;
+                            }
+
+                            // Skip if no valid amount found
+                            if (!hasAmount || amount <= 0)
+                                continue;
+
                             transactions.Add(new Transaction
                             {
                                 Description = description,
                                 Amount = amount,
-                                Type = type.ToLower(),
+                                Type = type,
                                 Date = date,
                                 CreatedAt = DateTime.UtcNow
                             });

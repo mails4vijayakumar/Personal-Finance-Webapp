@@ -6,48 +6,66 @@
 
 ## Column Format
 
-Your Excel sheet should have **4 columns** in this order:
+Your Excel sheet should have **5 columns** in this order (Bank Statement Format):
 
-| Column A | Column B | Column C | Column D |
-|----------|----------|----------|----------|
-| Description | Amount | Type | Date |
+| Column A | Column B | Column C | Column D | Column E |
+|----------|----------|----------|----------|----------|
+| Date | Narration | Chq./Ref.No | Withdrawal Amt. | Deposit Amt. |
 
 ## Example Data
 
-| Description | Amount | Type | Date |
-|---|---|---|---|
-| Monthly Salary | 5000 | income | 2026-03-01 |
-| Groceries | 150.50 | expense | 2026-03-02 |
-| Freelance Project | 500 | income | 2026-03-03 |
-| Gas | 45.75 | expense | 2026-03-04 |
-| Utilities | 120 | expense | 2026-03-05 |
+| Date | Narration | Chq./Ref.No | Withdrawal Amt. | Deposit Amt. |
+|---|---|---|---|---|
+| 2026-03-01 | Monthly Salary | - | | 5000 |
+| 2026-03-02 | Groceries | CHQ123 | 150.50 | |
+| 2026-03-03 | Freelance Project | TRF456 | | 500 |
+| 2026-03-04 | Gas Station | CHQ124 | 45.75 | |
+| 2026-03-05 | Utilities | AUTO | 120 | |
 
 ## Column Specifications
 
-### Column A: Description
+### Column A: Date
+- **Required:** Optional (if not provided, current date is used)
+- **Type:** Date
+- **Format:** Standard date formats (YYYY-MM-DD recommended)
+- **Example:** "2026-03-01", "03/01/2026", "2026-03-01 10:30:00"
+
+### Column B: Narration
 - **Required:** Yes
 - **Type:** Text
 - **Max Length:** 255 characters
-- **Example:** "Monthly Salary", "Groceries", "Gas", etc.
+- **Description:** The description of the transaction
+- **Example:** "Monthly Salary", "Groceries", "Gas", "Utility Bill"
 
-### Column B: Amount
-- **Required:** Yes
+### Column C: Chq./Ref.No
+- **Required:** Optional
+- **Type:** Text
+- **Description:** Check number or reference number
+- **Usage:** Appended to narration as "(Ref: CHQ123)"
+- **Example:** "CHQ123", "TRF456", "AUTO", "-", ""
+
+### Column D: Withdrawal Amt.
+- **Required:** Optional (if Deposit is empty)
 - **Type:** Decimal number
 - **Valid Range:** > 0
 - **Max Precision:** 2 decimal places
-- **Example:** 5000, 150.50, 45.75
+- **Type Detection:** Positive values = Expense transaction
+- **Example:** 150.50, 45.75, 120
 
-### Column C: Type
-- **Required:** Yes
-- **Type:** Text
-- **Valid Values:** "income" or "expense" (case-insensitive)
-- **Example:** "income", "expense", "Income", "EXPENSE"
+### Column E: Deposit Amt.
+- **Required:** Optional (if Withdrawal is empty)
+- **Type:** Decimal number
+- **Valid Range:** > 0
+- **Max Precision:** 2 decimal places
+- **Type Detection:** Positive values = Income transaction
+- **Example:** 5000, 500, 1200.50
 
-### Column D: Date
-- **Required:** Optional
-- **Type:** Date (if not provided, current date is used)
-- **Format:** Standard date formats (YYYY-MM-DD recommended)
-- **Examples:** "2026-03-01", "03/01/2026", "2026-03-01 10:30:00"
+## Import Logic
+
+- **Withdrawal Amount > 0** → Transaction type = "expense"
+- **Deposit Amount > 0** → Transaction type = "income"
+- **Both empty or zero** → Row is skipped
+- **Reference number included** → Appended to narration for reference
 
 ## Import Notes
 
@@ -59,16 +77,19 @@ Your Excel sheet should have **4 columns** in this order:
 
 4. **Automatic refresh** - After successful import, your transaction list updates automatically.
 
-5. **Case-insensitive type** - Both "income" and "INCOME" work fine.
+5. **Date optional** - If date is not provided or invalid, current date is used.
+
+6. **Reference number is optional** - If provided, it's added to the transaction description.
 
 ## Example Excel Structure
 
 ```
-Row 1: Description | Amount | Type | Date (Headers - will be skipped)
-Row 2: Monthly Salary | 5000 | income | 2026-03-01
-Row 3: Groceries | 150.50 | expense | 2026-03-02
-Row 4: Freelance Project | 500 | income | 2026-03-03
-Row 5: Gas | 45.75 | expense | 2026-03-04
+Row 1: Date | Narration | Chq./Ref.No | Withdrawal Amt. | Deposit Amt. (Headers - will be skipped)
+Row 2: 2026-03-01 | Monthly Salary | - | | 5000
+Row 3: 2026-03-02 | Groceries | CHQ123 | 150.50 |
+Row 4: 2026-03-03 | Freelance Project | TRF456 | | 500
+Row 5: 2026-03-04 | Gas Station | CHQ124 | 45.75 |
+Row 6: 2026-03-05 | Utilities | AUTO | 120 |
 ... and so on
 ```
 
@@ -76,25 +97,37 @@ Row 5: Gas | 45.75 | expense | 2026-03-04
 
 ### "No valid transactions found in the file"
 - Ensure data starts from row 2 (row 1 is headers)
-- Check that all required columns have data
-- Verify Amount is a valid decimal number
-- Verify Type is either "income" or "expense"
+- Check that Narration column has data
+- Verify at least one of Withdrawal or Deposit amount is provided
+- Check amounts are valid decimal numbers
 
-### Invalid amounts are skipped
-- Amount must be a positive number
-- Amount must have at most 2 decimal places
-- Empty amount cells will skip that row
+### Invalid rows are skipped
+- Narration must not be empty
+- At least one amount column (Withdrawal or Deposit) must have a positive value
+- Empty amount cells will be treated as 0
+- Rows with no amounts will be skipped
 
-### Invalid dates are skipped or use current date
-- If date is not provided or invalid, current date is used
-- Dates should be in standard format (YYYY-MM-DD)
+### All amounts showing as expense/income
+- If only Withdrawal column has values = all expenses
+- If only Deposit column has values = all income
+- Mix both columns for mixed transactions
 
 ## Template Download
 
 You can create your own Excel file with the columns:
-1. Description
-2. Amount  
-3. Type
-4. Date
+1. Date
+2. Narration  
+3. Chq./Ref.No
+4. Withdrawal Amt.
+5. Deposit Amt.
 
-Then add your transaction data and upload via the app's "Import Transactions from Excel" section.
+Then add your banking transaction data and upload via the app's "Import Transactions from Excel" section.
+
+## Bank Statement Tips
+
+This format matches typical bank statement exports:
+- **Date** - Transaction date
+- **Narration** - Description from bank statement
+- **Chq./Ref.No** - Cheque number or transaction reference
+- **Withdrawal** - Money going out (Expenses/Debits)
+- **Deposit** - Money coming in (Income/Credits)
