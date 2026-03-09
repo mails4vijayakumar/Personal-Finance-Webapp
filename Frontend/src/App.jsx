@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from './context/useAuth'
+import { useCategories } from './hooks/useCategories'
 import Login from './components/Login'
 import Register from './components/Register'
 import Dashboard from './components/Dashboard'
@@ -7,6 +8,7 @@ import CategoriesPage from './components/CategoriesPage'
 import BudgetsPage from './components/BudgetsPage'
 import TransactionForm from './components/TransactionForm'
 import TransactionList from './components/TransactionList'
+import TransactionFilters from './components/TransactionFilters'
 import FileUpload from './components/FileUpload'
 import './App.css'
 
@@ -14,24 +16,44 @@ const API_URL = '/api'
 
 function App() {
     const { isAuthenticated, token, logout, loading: authLoading } = useAuth()
+    const { categories, loading: categoriesLoading } = useCategories()
     const [authView, setAuthView] = useState('login') // 'login' or 'register'
     const [currentPage, setCurrentPage] = useState('dashboard') // 'dashboard', 'categories', or 'budgets'
     const [transactions, setTransactions] = useState([])
+    const [filteredTransactions, setFilteredTransactions] = useState([])
     const [summary, setSummary] = useState({ balance: 0, totalIncome: 0, totalExpenses: 0 })
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
     const [success, setSuccess] = useState(null)
+    const [searchTerm, setSearchTerm] = useState('')
+    const [activeFilters, setActiveFilters] = useState({
+        categoryId: null,
+        type: null,
+        startDate: null,
+        endDate: null
+    })
 
     // Fetch transactions and summary
-    const fetchData = async () => {
+    const fetchData = async (filters = {}) => {
         if (!isAuthenticated || !token) return
 
         try {
             setLoading(true)
             setError(null)
 
+            // Build query string with filters
+            const queryParams = new URLSearchParams()
+            if (filters.search) queryParams.append('search', filters.search)
+            if (filters.categoryId) queryParams.append('categoryId', filters.categoryId)
+            if (filters.type) queryParams.append('type', filters.type)
+            if (filters.startDate) queryParams.append('startDate', filters.startDate)
+            if (filters.endDate) queryParams.append('endDate', filters.endDate)
+
+            const queryString = queryParams.toString()
+            const transURL = queryString ? `${API_URL}/transactions?${queryString}` : `${API_URL}/transactions`
+
             const [transRes, summaryRes] = await Promise.all([
-                fetch(`${API_URL}/transactions`, {
+                fetch(transURL, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -51,6 +73,7 @@ function App() {
             const summaryData = await summaryRes.json()
 
             setTransactions(transData)
+            setFilteredTransactions(transData)
             setSummary(summaryData)
         } catch (err) {
             setError('Failed to load data: ' + err.message)
@@ -66,6 +89,38 @@ function App() {
             fetchData()
         }
     }, [isAuthenticated, token])
+
+    // Handle search
+    const handleSearch = async (searchTerm) => {
+        setSearchTerm(searchTerm)
+        const filters = {
+            search: searchTerm,
+            ...activeFilters
+        }
+        await fetchData(filters)
+    }
+
+    // Handle filter
+    const handleFilter = async (filterOptions) => {
+        setActiveFilters(filterOptions)
+        const filters = {
+            search: searchTerm,
+            ...filterOptions
+        }
+        await fetchData(filters)
+    }
+
+    // Handle reset filters
+    const handleResetFilters = async () => {
+        setSearchTerm('')
+        setActiveFilters({
+            categoryId: null,
+            type: null,
+            startDate: null,
+            endDate: null
+        })
+        await fetchData()
+    }
 
     // Add transaction
     const handleAddTransaction = async (transaction) => {
@@ -195,12 +250,22 @@ function App() {
 
                             <section className="section">
                                 <h2>Recent Transactions</h2>
+                                <TransactionFilters 
+                                    categories={categories}
+                                    onSearch={handleSearch}
+                                    onFilter={handleFilter}
+                                    onReset={handleResetFilters}
+                                />
                                 {loading ? (
                                     <p className="loading">Loading transactions...</p>
-                                ) : transactions.length === 0 ? (
-                                    <p className="empty-state">No transactions yet. Add one to get started!</p>
+                                ) : filteredTransactions.length === 0 ? (
+                                    <p className="empty-state">No transactions found.</p>
                                 ) : (
-                                    <TransactionList transactions={transactions} onDelete={handleDeleteTransaction} />
+                                    <TransactionList 
+                                        transactions={filteredTransactions} 
+                                        categories={categories}
+                                        onDelete={handleDeleteTransaction} 
+                                    />
                                 )}
                             </section>
                         </div>
