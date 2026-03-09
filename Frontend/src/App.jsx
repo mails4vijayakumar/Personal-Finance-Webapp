@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react'
+import { useAuth } from './context/useAuth'
+import Login from './components/Login'
+import Register from './components/Register'
 import Dashboard from './components/Dashboard'
 import TransactionForm from './components/TransactionForm'
 import TransactionList from './components/TransactionList'
@@ -8,6 +11,8 @@ import './App.css'
 const API_URL = '/api'
 
 function App() {
+    const { isAuthenticated, token, logout, loading: authLoading } = useAuth()
+    const [authView, setAuthView] = useState('login') // 'login' or 'register'
     const [transactions, setTransactions] = useState([])
     const [summary, setSummary] = useState({ balance: 0, totalIncome: 0, totalExpenses: 0 })
     const [loading, setLoading] = useState(false)
@@ -16,13 +21,23 @@ function App() {
 
     // Fetch transactions and summary
     const fetchData = async () => {
+        if (!isAuthenticated || !token) return
+
         try {
             setLoading(true)
             setError(null)
 
             const [transRes, summaryRes] = await Promise.all([
-                fetch(`${API_URL}/transactions`),
-                fetch(`${API_URL}/transactions/summary`)
+                fetch(`${API_URL}/transactions`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }),
+                fetch(`${API_URL}/transactions/summary`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
             ])
 
             if (!transRes.ok || !summaryRes.ok) {
@@ -42,13 +57,17 @@ function App() {
         }
     }
 
-    // Initial load
+    // Load data when authenticated
     useEffect(() => {
-        fetchData()
-    }, [])
+        if (isAuthenticated && token) {
+            fetchData()
+        }
+    }, [isAuthenticated, token])
 
     // Add transaction
     const handleAddTransaction = async (transaction) => {
+        if (!token) return
+
         try {
             setError(null)
             setSuccess(null)
@@ -57,6 +76,7 @@ function App() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(transaction)
             })
@@ -78,10 +98,15 @@ function App() {
 
     // Delete transaction
     const handleDeleteTransaction = async (id) => {
+        if (!token) return
+
         try {
             setError(null)
             const response = await fetch(`${API_URL}/transactions/${id}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             })
 
             if (!response.ok) {
@@ -98,10 +123,31 @@ function App() {
         }
     }
 
+    // Show loading while checking authentication
+    if (authLoading) {
+        return (
+            <div className="loading-container">
+                <div className="spinner"></div>
+                <p>Loading...</p>
+            </div>
+        )
+    }
+
+    // Show auth screens if not authenticated
+    if (!isAuthenticated) {
+        return authView === 'login' ? (
+            <Login onSwitchToRegister={() => setAuthView('register')} />
+        ) : (
+            <Register onSwitchToLogin={() => setAuthView('login')} />
+        )
+    }
+
+    // Show main app if authenticated
     return (
         <div className="app-container">
             <header className="app-header">
                 <h1>💰 Personal Finance Tracker</h1>
+                <button className="btn-logout" onClick={logout}>Logout</button>
             </header>
 
             <main className="app-main">
@@ -112,13 +158,13 @@ function App() {
 
                 <section className="section section-full-width">
                     <h2>📊 Import Transactions from Excel</h2>
-                    <FileUpload onUploadSuccess={fetchData} />
+                    <FileUpload onUploadSuccess={fetchData} token={token} />
                 </section>
 
                 <div className="content-grid">
                     <section className="section">
                         <h2>Add Transaction</h2>
-                        <TransactionForm onAddTransaction={handleAddTransaction} />
+                        <TransactionForm onAddTransaction={handleAddTransaction} token={token} />
                     </section>
 
                     <section className="section">

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-function FileUpload({ onUploadSuccess }) {
+function FileUpload({ onUploadSuccess, token }) {
     const [file, setFile] = useState(null)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
@@ -38,6 +38,9 @@ function FileUpload({ onUploadSuccess }) {
 
             const response = await fetch('/api/transactions/upload', {
                 method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
                 body: formData
             })
 

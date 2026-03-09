@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-function TransactionForm({ onAddTransaction }) {
+function TransactionForm({ onAddTransaction, token }) {
     const [formData, setFormData] = useState({
         description: '',
         amount: '',
