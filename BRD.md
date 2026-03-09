@@ -48,8 +48,17 @@ A simple, user-friendly personal finance web application that allows users to tr
 - **FR-3.1:** Display all transactions in a table format
 - **FR-3.2:** Show columns: Date, Description, Amount, Type
 - **FR-3.3:** Display transactions in reverse chronological order (newest first)
-- **FR-3.4:** Support transaction deletion (optional enhancement)
+- **FR-3.4:** Support transaction deletion
 - **FR-3.5:** Update list automatically when new transaction is added
+
+### 3.4 Excel Import
+- **FR-4.1:** Support uploading Excel files (.xlsx, .xls)
+- **FR-4.2:** Parse Excel sheet with columns: Description, Amount, Type, Date
+- **FR-4.3:** Validate data before importing
+- **FR-4.4:** Bulk insert valid transactions
+- **FR-4.5:** Skip invalid rows with error reporting
+- **FR-4.6:** Display success message with count of imported transactions
+- **FR-4.7:** Automatically refresh dashboard after import
 
 ---
 
@@ -58,6 +67,7 @@ A simple, user-friendly personal finance web application that allows users to tr
 ### 4.1 Performance
 - **NFR-1.1:** Page load time < 2 seconds
 - **NFR-1.2:** Transaction submission response < 1 second
+- **NFR-1.3:** Excel import response < 5 seconds for 1000 rows
 
 ### 4.2 Usability
 - **NFR-2.1:** Dark theme UI
@@ -169,7 +179,7 @@ A simple, user-friendly personal finance web application that allows users to tr
 - Transaction categories
 - Budget tracking
 - Recurring transactions
-- Transaction search/filtering
+- Advanced search/filtering
 - Reports and charts
 - Data export (CSV/PDF)
 - Mobile app (native)
@@ -180,11 +190,13 @@ A simple, user-friendly personal finance web application that allows users to tr
 
 - ✅ All transactions persist in SQL database
 - ✅ Dashboard summary calculates correctly
-- ✅ Users can add transactions within 5 seconds
+- ✅ Users can add transactions manually or via Excel upload
+- ✅ Excel import validates and imports data correctly
 - ✅ Dark theme UI is applied across entire application
 - ✅ Application is responsive and works on mobile browsers
 - ✅ No validation errors on form submission
 - ✅ Zero data loss
+- ✅ Excel import handles 1000+ rows efficiently
 
 ---
 

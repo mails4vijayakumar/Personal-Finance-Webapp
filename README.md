@@ -22,7 +22,8 @@ Personal-finance/
 │   │   ├── components/
 │   │   │   ├── Dashboard.jsx
 │   │   │   ├── TransactionForm.jsx
-│   │   │   └── TransactionList.jsx
+│   │   │   ├── TransactionList.jsx
+│   │   │   └── FileUpload.jsx
 │   │   ├── App.jsx
 │   │   ├── App.css
 │   │   ├── index.css
@@ -32,15 +33,18 @@ Personal-finance/
 │   ├── vite.config.js
 │   └── .gitignore
 ├── BRD.md
-└── README.md
+├── README.md
+├── EXCEL_IMPORT_GUIDE.md
+└── .gitignore
 ```
 
 ## ✨ Features
 
 - ✅ **Dashboard Summary** - View total balance, income, and expenses at a glance
 - ✅ **Add Transactions** - Simple form to add income or expense transactions
+- ✅ **Import from Excel** - Bulk upload transactions from .xlsx or .xls files
 - ✅ **Transaction List** - View all transactions in chronological order
-- ✅ **Delete Transactions** - Remove transactions (optional)
+- ✅ **Delete Transactions** - Remove transactions
 - ✅ **Dark Theme** - Beautiful dark mode UI for easy on the eyes
 - ✅ **Responsive Design** - Works seamlessly on desktop, tablet, and mobile
 - ✅ **Real-time Updates** - Dashboard updates automatically when transactions change
@@ -199,6 +203,48 @@ DELETE /transactions/{id}
 ```
 
 **Response (204 No Content)**
+
+### Upload Transactions from Excel
+```
+POST /transactions/upload
+Content-Type: multipart/form-data
+
+Form Data:
+- file: [Excel file (.xlsx or .xls)]
+```
+
+**Request Example:**
+- Use the web UI file upload component or `curl`:
+```bash
+curl -X POST -F "file=@transactions.xlsx" http://localhost:5000/api/transactions/upload
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Successfully imported 5 transactions",
+  "count": 5,
+  "transactions": [
+    {
+      "id": 4,
+      "description": "Monthly Salary",
+      "amount": 5000.00,
+      "type": "income",
+      "date": "2026-03-01T00:00:00Z",
+      "createdAt": "2026-03-08T16:00:00Z"
+    },
+    ...
+  ]
+}
+```
+
+**Excel Format:**
+- Column A: Description
+- Column B: Amount (decimal number)
+- Column C: Type (income/expense)
+- Column D: Date (optional, format: YYYY-MM-DD)
+
+For detailed Excel format guide, see [EXCEL_IMPORT_GUIDE.md](EXCEL_IMPORT_GUIDE.md)
 
 ## 🎨 Dark Theme Features
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Dashboard from './components/Dashboard'
 import TransactionForm from './components/TransactionForm'
 import TransactionList from './components/TransactionList'
+import FileUpload from './components/FileUpload'
 import './App.css'
 
 const API_URL = '/api'
@@ -108,6 +109,11 @@ function App() {
                 {success && <div className="alert alert-success">{success}</div>}
 
                 <Dashboard summary={summary} loading={loading} />
+
+                <section className="section section-full-width">
+                    <h2>📊 Import Transactions from Excel</h2>
+                    <FileUpload onUploadSuccess={fetchData} />
+                </section>
 
                 <div className="content-grid">
                     <section className="section">

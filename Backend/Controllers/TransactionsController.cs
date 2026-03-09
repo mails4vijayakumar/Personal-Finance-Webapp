@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PersonalFinanceAPI.Data;
 using PersonalFinanceAPI.Models;
+using ClosedXML.Excel;
 
 namespace PersonalFinanceAPI.Controllers;
 
@@ -92,6 +93,97 @@ public class TransactionsController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    // POST: api/transactions/upload
+    [HttpPost("upload")]
+    public async Task<ActionResult<object>> UploadTransactions([FromForm] IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest(new { error = "No file provided" });
+
+        // Validate file extension
+        var allowedExtensions = new[] { ".xlsx", ".xls" };
+        var fileExtension = Path.GetExtension(file.FileName).ToLower();
+        if (!allowedExtensions.Contains(fileExtension))
+            return BadRequest(new { error = "Only Excel files (.xlsx, .xls) are allowed" });
+
+        try
+        {
+            var transactions = new List<Transaction>();
+
+            using (var stream = new MemoryStream())
+            {
+                await file.CopyToAsync(stream);
+                stream.Position = 0;
+
+                using (var workbook = new XLWorkbook(stream))
+                {
+                    var worksheet = workbook.Worksheet(1);
+                    var rows = worksheet.RangeUsed().RowsUsed().Skip(1); // Skip header row
+
+                    foreach (var row in rows)
+                    {
+                        try
+                        {
+                            var description = row.Cell(1).GetString()?.Trim();
+                            var amountStr = row.Cell(2).GetString()?.Trim();
+                            var type = row.Cell(3).GetString()?.Trim();
+                            var dateStr = row.Cell(4).GetString()?.Trim();
+
+                            // Validation
+                            if (string.IsNullOrEmpty(description))
+                                continue;
+
+                            if (!decimal.TryParse(amountStr, out var amount) || amount <= 0)
+                                continue;
+
+                            if (string.IsNullOrEmpty(type) || (type.ToLower() != "income" && type.ToLower() != "expense"))
+                                continue;
+
+                            var date = DateTime.UtcNow;
+                            if (!string.IsNullOrEmpty(dateStr))
+                            {
+                                if (DateTime.TryParse(dateStr, out var parsedDate))
+                                    date = parsedDate;
+                            }
+
+                            transactions.Add(new Transaction
+                            {
+                                Description = description,
+                                Amount = amount,
+                                Type = type.ToLower(),
+                                Date = date,
+                                CreatedAt = DateTime.UtcNow
+                            });
+                        }
+                        catch
+                        {
+                            // Skip invalid rows
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            if (transactions.Count == 0)
+                return BadRequest(new { error = "No valid transactions found in the file" });
+
+            // Bulk insert transactions
+            _context.Transactions.AddRange(transactions);
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = $"Successfully imported {transactions.Count} transactions",
+                count = transactions.Count,
+                transactions = transactions.OrderByDescending(t => t.Date).ToList()
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = $"Error processing file: {ex.Message}" });
+        }
     }
 }
 
