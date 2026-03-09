@@ -4,6 +4,7 @@ import Login from './components/Login'
 import Register from './components/Register'
 import Dashboard from './components/Dashboard'
 import CategoriesPage from './components/CategoriesPage'
+import BudgetsPage from './components/BudgetsPage'
 import TransactionForm from './components/TransactionForm'
 import TransactionList from './components/TransactionList'
 import FileUpload from './components/FileUpload'
@@ -14,7 +15,7 @@ const API_URL = '/api'
 function App() {
     const { isAuthenticated, token, logout, loading: authLoading } = useAuth()
     const [authView, setAuthView] = useState('login') // 'login' or 'register'
-    const [currentPage, setCurrentPage] = useState('dashboard') // 'dashboard' or 'categories'
+    const [currentPage, setCurrentPage] = useState('dashboard') // 'dashboard', 'categories', or 'budgets'
     const [transactions, setTransactions] = useState([])
     const [summary, setSummary] = useState({ balance: 0, totalIncome: 0, totalExpenses: 0 })
     const [loading, setLoading] = useState(false)
@@ -165,6 +166,12 @@ function App() {
                 >
                     📂 Categories
                 </button>
+                <button
+                    className={`nav-button ${currentPage === 'budgets' ? 'active' : ''}`}
+                    onClick={() => setCurrentPage('budgets')}
+                >
+                    💰 Budgets
+                </button>
             </nav>
 
             <main className="app-main">
@@ -198,8 +205,10 @@ function App() {
                             </section>
                         </div>
                     </>
-                ) : (
+                ) : currentPage === 'categories' ? (
                     <CategoriesPage />
+                ) : (
+                    <BudgetsPage />
                 )}
             </main>
 
