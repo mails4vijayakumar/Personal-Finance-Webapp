@@ -1,0 +1,10 @@
+{
+    "name": "personal-finance-api",
+    "version": "1.0.0",
+    "description": "Personal Finance API for Azure deployment",
+    "scripts": {
+        "start": "dotnet run",
+        "build": "dotnet build -c Release",
+        "publish": "dotnet publish -c Release -o ./publish"
+    }
+}

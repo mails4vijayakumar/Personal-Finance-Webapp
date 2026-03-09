@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useCategories } from './useCategories'
+import { useCategories } from '../context/useCategories'
 import '../styles/Budgets.css'
 
 export default function BudgetForm({ onSubmit, onCancel, initialBudget = null }) {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/useAuth'
-import { useCategories } from '../hooks/useCategories'
-import { useBudgets } from '../hooks/useBudgets'
+import { useCategories } from '../context/useCategories'
+import { useBudgets } from '../context/useBudgets'
 import { Pie, Bar, Line } from 'react-chartjs-2'
 import {
     Chart as ChartJS,

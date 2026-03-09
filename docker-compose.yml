@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Backend.Dockerfile
+    container_name: finance-api
+    ports:
+      - "5000:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:80
+      ConnectionStrings__DefaultConnection: Data Source=/app/data/PersonalFinance.db
+      Jwt__SecretKey: your-ultra-secure-secret-key-minimum-32-characters-long-here
+      Jwt__Issuer: PersonalFinanceAPI
+      Jwt__Audience: PersonalFinanceClient
+      Jwt__ExpiryMinutes: "10080"
+    volumes:
+      - ./data:/app/data
+    networks:
+      - finance-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Frontend.Dockerfile
+    container_name: finance-web
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    environment:
+      - BACKEND_URL=http://backend:80/api
+    networks:
+      - finance-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+networks:
+  finance-network:
+    driver: bridge
+
+volumes:
+  data:
+    driver: local

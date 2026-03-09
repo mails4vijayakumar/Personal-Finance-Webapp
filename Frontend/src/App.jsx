@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from './context/useAuth'
-import { useCategories } from './hooks/useCategories'
+import { useCategories } from './context/useCategories'
 import Login from './components/Login'
 import Register from './components/Register'
 import Dashboard from './components/Dashboard'
