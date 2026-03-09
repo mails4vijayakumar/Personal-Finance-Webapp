@@ -49,9 +49,9 @@ function TransactionList({ transactions, onDelete, categories = [] }) {
                             <td>{formatDate(transaction.date)}</td>
                             <td>{transaction.description}</td>
                             <td>
-                                <span 
+                                <span
                                     className="category-badge"
-                                    style={{ 
+                                    style={{
                                         backgroundColor: getCategoryColor(transaction.categoryId),
                                         color: '#000000'
                                     }}

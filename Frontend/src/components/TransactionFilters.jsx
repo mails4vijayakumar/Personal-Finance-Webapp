@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import '../styles/TransactionFilters.css'
 
-export default function TransactionFilters({ 
-    categories, 
-    onFilter, 
+export default function TransactionFilters({
+    categories,
+    onFilter,
     onSearch,
-    onReset 
+    onReset
 }) {
     const [searchTerm, setSearchTerm] = useState('')
     const [categoryId, setCategoryId] = useState('')
@@ -48,7 +48,7 @@ export default function TransactionFilters({
                 />
             </div>
 
-            <button 
+            <button
                 className="toggle-advanced"
                 onClick={() => setShowAdvanced(!showAdvanced)}
             >
@@ -115,13 +115,13 @@ export default function TransactionFilters({
                     </div>
 
                     <div className="filter-actions">
-                        <button 
+                        <button
                             className="btn btn-primary"
                             onClick={handleFilterClick}
                         >
                             Apply Filters
                         </button>
-                        <button 
+                        <button
                             className="btn btn-secondary"
                             onClick={handleReset}
                         >

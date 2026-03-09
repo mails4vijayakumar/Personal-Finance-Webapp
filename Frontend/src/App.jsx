@@ -6,6 +6,7 @@ import Register from './components/Register'
 import Dashboard from './components/Dashboard'
 import CategoriesPage from './components/CategoriesPage'
 import BudgetsPage from './components/BudgetsPage'
+import ReportsPage from './components/ReportsPage'
 import TransactionForm from './components/TransactionForm'
 import TransactionList from './components/TransactionList'
 import TransactionFilters from './components/TransactionFilters'
@@ -18,7 +19,7 @@ function App() {
     const { isAuthenticated, token, logout, loading: authLoading } = useAuth()
     const { categories, loading: categoriesLoading } = useCategories()
     const [authView, setAuthView] = useState('login') // 'login' or 'register'
-    const [currentPage, setCurrentPage] = useState('dashboard') // 'dashboard', 'categories', or 'budgets'
+    const [currentPage, setCurrentPage] = useState('dashboard') // 'dashboard', 'categories', 'budgets', or 'reports'
     const [transactions, setTransactions] = useState([])
     const [filteredTransactions, setFilteredTransactions] = useState([])
     const [summary, setSummary] = useState({ balance: 0, totalIncome: 0, totalExpenses: 0 })
@@ -227,6 +228,12 @@ function App() {
                 >
                     💰 Budgets
                 </button>
+                <button
+                    className={`nav-button ${currentPage === 'reports' ? 'active' : ''}`}
+                    onClick={() => setCurrentPage('reports')}
+                >
+                    📈 Reports
+                </button>
             </nav>
 
             <main className="app-main">
@@ -250,7 +257,7 @@ function App() {
 
                             <section className="section">
                                 <h2>Recent Transactions</h2>
-                                <TransactionFilters 
+                                <TransactionFilters
                                     categories={categories}
                                     onSearch={handleSearch}
                                     onFilter={handleFilter}
@@ -261,10 +268,10 @@ function App() {
                                 ) : filteredTransactions.length === 0 ? (
                                     <p className="empty-state">No transactions found.</p>
                                 ) : (
-                                    <TransactionList 
-                                        transactions={filteredTransactions} 
+                                    <TransactionList
+                                        transactions={filteredTransactions}
                                         categories={categories}
-                                        onDelete={handleDeleteTransaction} 
+                                        onDelete={handleDeleteTransaction}
                                     />
                                 )}
                             </section>
@@ -272,9 +279,12 @@ function App() {
                     </>
                 ) : currentPage === 'categories' ? (
                     <CategoriesPage />
-                ) : (
+                ) : currentPage === 'budgets' ? (
                     <BudgetsPage />
-                )}
+                ) : currentPage === 'reports' ? (
+                    <ReportsPage />
+                ) : null
+                }
             </main>
 
             <footer className="app-footer">

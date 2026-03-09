@@ -16,12 +16,12 @@ export function useBudgets() {
         try {
             setLoading(true)
             setError(null)
-            
+
             let url = `${API_URL}/budgets`
             if (month && year) {
                 url += `?month=${month}&year=${year}`
             }
-            
+
             const response = await fetch(url, {
                 headers: {
                     'Authorization': `Bearer ${token}`
