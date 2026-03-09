@@ -1,20 +1,18 @@
 namespace PersonalFinanceAPI.Models;
 
-public class Transaction
+public class Budget
 {
     public int Id { get; set; }
     
     public int UserId { get; set; }
     
-    public int? CategoryId { get; set; }
-    
-    public string Description { get; set; } = string.Empty;
+    public int CategoryId { get; set; }
     
     public decimal Amount { get; set; }
     
-    public string Type { get; set; } = "expense"; // "income" or "expense"
+    public int Month { get; set; } // 1-12
     
-    public DateTime Date { get; set; } = DateTime.UtcNow;
+    public int Year { get; set; }
     
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     
