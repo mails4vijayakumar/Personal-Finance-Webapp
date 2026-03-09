@@ -1,11 +1,20 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useCategories } from '../context/useCategories'
 
 function TransactionForm({ onAddTransaction, token }) {
+    const { categories, fetchCategories } = useCategories()
     const [formData, setFormData] = useState({
         description: '',
         amount: '',
-        type: 'expense'
+        type: 'expense',
+        categoryId: null
     })
+
+    useEffect(() => {
+        if (token) {
+            fetchCategories()
+        }
+    }, [token])
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -32,14 +41,16 @@ function TransactionForm({ onAddTransaction, token }) {
         onAddTransaction({
             description: formData.description.trim(),
             amount: parseFloat(formData.amount),
-            type: formData.type
+            type: formData.type,
+            categoryId: formData.categoryId ? parseInt(formData.categoryId) : null
         })
 
         // Reset form
         setFormData({
             description: '',
             amount: '',
-            type: 'expense'
+            type: 'expense',
+            categoryId: null
         })
     }
 
@@ -83,6 +94,24 @@ function TransactionForm({ onAddTransaction, token }) {
                 >
                     <option value="expense">Expense</option>
                     <option value="income">Income</option>
+                </select>
+            </div>
+
+            <div className="form-group">
+                <label htmlFor="categoryId">Category (Optional)</label>
+                <select
+                    id="categoryId"
+                    name="categoryId"
+                    value={formData.categoryId || ''}
+                    onChange={handleChange}
+                    className="category-select"
+                >
+                    <option value="">-- No Category --</option>
+                    {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>
+                            {cat.name}
+                        </option>
+                    ))}
                 </select>
             </div>
 

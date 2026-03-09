@@ -131,7 +131,7 @@ export default function Register({ onSwitchToLogin }) {
                 </form>
 
                 <div className="auth-footer">
-                    <p>Already have an account? 
+                    <p>Already have an account?
                         <button
                             type="button"
                             className="link-button"

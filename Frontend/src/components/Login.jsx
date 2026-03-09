@@ -76,7 +76,7 @@ export default function Login({ onSwitchToRegister }) {
                 </form>
 
                 <div className="auth-footer">
-                    <p>Don't have an account? 
+                    <p>Don't have an account?
                         <button
                             type="button"
                             className="link-button"

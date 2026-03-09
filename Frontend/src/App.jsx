@@ -3,6 +3,7 @@ import { useAuth } from './context/useAuth'
 import Login from './components/Login'
 import Register from './components/Register'
 import Dashboard from './components/Dashboard'
+import CategoriesPage from './components/CategoriesPage'
 import TransactionForm from './components/TransactionForm'
 import TransactionList from './components/TransactionList'
 import FileUpload from './components/FileUpload'
@@ -13,6 +14,7 @@ const API_URL = '/api'
 function App() {
     const { isAuthenticated, token, logout, loading: authLoading } = useAuth()
     const [authView, setAuthView] = useState('login') // 'login' or 'register'
+    const [currentPage, setCurrentPage] = useState('dashboard') // 'dashboard' or 'categories'
     const [transactions, setTransactions] = useState([])
     const [summary, setSummary] = useState({ balance: 0, totalIncome: 0, totalExpenses: 0 })
     const [loading, setLoading] = useState(false)
@@ -150,34 +152,55 @@ function App() {
                 <button className="btn-logout" onClick={logout}>Logout</button>
             </header>
 
+            <nav className="app-nav">
+                <button
+                    className={`nav-button ${currentPage === 'dashboard' ? 'active' : ''}`}
+                    onClick={() => setCurrentPage('dashboard')}
+                >
+                    📊 Dashboard
+                </button>
+                <button
+                    className={`nav-button ${currentPage === 'categories' ? 'active' : ''}`}
+                    onClick={() => setCurrentPage('categories')}
+                >
+                    📂 Categories
+                </button>
+            </nav>
+
             <main className="app-main">
                 {error && <div className="alert alert-error">{error}</div>}
                 {success && <div className="alert alert-success">{success}</div>}
 
-                <Dashboard summary={summary} loading={loading} />
+                {currentPage === 'dashboard' ? (
+                    <>
+                        <Dashboard summary={summary} loading={loading} />
 
-                <section className="section section-full-width">
-                    <h2>📊 Import Transactions from Excel</h2>
-                    <FileUpload onUploadSuccess={fetchData} token={token} />
-                </section>
+                        <section className="section section-full-width">
+                            <h2>📊 Import Transactions from Excel</h2>
+                            <FileUpload onUploadSuccess={fetchData} token={token} />
+                        </section>
 
-                <div className="content-grid">
-                    <section className="section">
-                        <h2>Add Transaction</h2>
-                        <TransactionForm onAddTransaction={handleAddTransaction} token={token} />
-                    </section>
+                        <div className="content-grid">
+                            <section className="section">
+                                <h2>Add Transaction</h2>
+                                <TransactionForm onAddTransaction={handleAddTransaction} token={token} />
+                            </section>
 
-                    <section className="section">
-                        <h2>Recent Transactions</h2>
-                        {loading ? (
-                            <p className="loading">Loading transactions...</p>
-                        ) : transactions.length === 0 ? (
-                            <p className="empty-state">No transactions yet. Add one to get started!</p>
-                        ) : (
-                            <TransactionList transactions={transactions} onDelete={handleDeleteTransaction} />
-                        )}
-                    </section>
-                </div>
+                            <section className="section">
+                                <h2>Recent Transactions</h2>
+                                {loading ? (
+                                    <p className="loading">Loading transactions...</p>
+                                ) : transactions.length === 0 ? (
+                                    <p className="empty-state">No transactions yet. Add one to get started!</p>
+                                ) : (
+                                    <TransactionList transactions={transactions} onDelete={handleDeleteTransaction} />
+                                )}
+                            </section>
+                        </div>
+                    </>
+                ) : (
+                    <CategoriesPage />
+                )}
             </main>
 
             <footer className="app-footer">
